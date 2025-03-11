@@ -27,9 +27,10 @@ func (t *todoRepo) CreateTodo(todo *entity.ToDo) (int, error) {
 	defer stmt.Close()
 
 	var result sql.Result
-	// a passagem dos valores em .Exec segue a ordem dos campos na criação do statement
-	// ou seja, o primeiro ? é o description e o segundo é o done
-	// smt.Exec é para modificações no banco de dados, enquanto smt.Query é para consultas
+
+	// the stmt.Exec receive values based on the VALUES order in the statement
+	// description first, done second
+	// smt.Exec is for database modifications, commands.
 	result, err = stmt.Exec(&todo.Description, &todo.Done)
 	if err != nil {
 		return 0, err
@@ -62,18 +63,21 @@ func (t *todoRepo) GetTodo(offset int, limit int) ([]entity.ToDo, error) {
 
 	var entities []entity.ToDo
 
-	// cria a query
+	// create the query statement
 	stmt, err := t.DB.Prepare("SELECT * FROM todos LIMIT ? OFFSET ?")
 	if err != nil {
 		return entities, err
 	}
 	defer stmt.Close()
 
-	// apenda os dados na query e executa
+	// append data to query statement and execute it
+	// stmt.Query is for queries
 	rows, err := stmt.Query(limit, offset)
 	if err != nil {
 		return entities, err
 	}
+
+	defer rows.Close() // close the rows (preventing lock)
 
 	for rows.Next() {
 
@@ -96,12 +100,15 @@ func (t *todoRepo) GetTodoById(id int) (entity.ToDo, error) {
 	if err != nil {
 		return entity, err
 	}
-	defer stmt.Close()
+	defer stmt.Close() // close the statement
 
 	rows, err := stmt.Query(id)
+
 	if err != nil {
 		return entity, err
 	}
+
+	defer rows.Close() // close the rows (preventing lock)
 
 	if !rows.Next() {
 		return entity, fmt.Errorf("todo não encontrado")
@@ -127,18 +134,18 @@ func (t *todoRepo) UpdateTodoById(id int, todo *entity.ToDo) (int, error) {
 		return 0, err
 	}
 
-	rows, err := result.RowsAffected()
+	rowsAffected, err := result.RowsAffected()
 	if err != nil {
 		return 0, err
 	}
 
-	if rows == 0 {
+	if rowsAffected == 0 {
 		return 0, fmt.Errorf("todo não encontrado para atualização")
 	}
 
 	fmt.Println("Todo atualizado com sucesso!")
 
-	return int(rows), nil
+	return int(rowsAffected), nil
 }
 
 func (t *todoRepo) DeleteTodoById(id int) (int, error) {
@@ -153,16 +160,16 @@ func (t *todoRepo) DeleteTodoById(id int) (int, error) {
 		return 0, err
 	}
 
-	rows, err := result.RowsAffected()
+	rowsAffected, err := result.RowsAffected()
 	if err != nil {
 		return 0, err
 	}
 
-	if rows == 0 {
+	if rowsAffected == 0 {
 		return 0, fmt.Errorf("todo não encontrado para deleção")
 	}
 
 	fmt.Println("Todo deletado com sucesso!")
 
-	return int(rows), nil
+	return int(rowsAffected), nil
 }
