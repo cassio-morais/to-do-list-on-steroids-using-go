@@ -28,16 +28,16 @@ func (th *TodoHandler) CreateTodoHandler(ctx *gin.Context) {
 		return
 	}
 
-	rowsAffected, err := th.toDoRepository.CreateTodo(&todo)
+	err := th.toDoRepository.CreateTodo(&todo)
 
-	if err != nil || rowsAffected == 0 {
+	if err != nil {
 		ctx.JSON(500, gin.H{
 			"message": err.Error(),
 		})
 		return
 	}
 
-	ctx.JSON(200, todo)
+	ctx.JSON(200, CreatedTodoResponse{Description: todo.Description, Done: todo.Done})
 }
 
 func (th *TodoHandler) GetTodoHandler(ctx *gin.Context) {
@@ -89,9 +89,9 @@ func (th *TodoHandler) UpdateTodoHandler(ctx *gin.Context) {
 		return
 	}
 
-	rowsAffected, err := th.toDoRepository.UpdateTodoById(id, &todo)
+	err = th.toDoRepository.UpdateTodoById(id, &todo)
 
-	if err != nil || rowsAffected == 0 {
+	if err != nil {
 		ctx.JSON(404, gin.H{
 			"message": err.Error(),
 		})
@@ -105,9 +105,9 @@ func (th *TodoHandler) DeleteTodoHandler(ctx *gin.Context) {
 	idStr := ctx.Param("id")
 	id, _ := strconv.Atoi(idStr)
 
-	rowsAffected, err := th.toDoRepository.DeleteTodoById(id)
+	err := th.toDoRepository.DeleteTodoById(id)
 
-	if err != nil || rowsAffected == 0 {
+	if err != nil {
 		ctx.JSON(404, gin.H{
 			"message": err.Error(),
 		})

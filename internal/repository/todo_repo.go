@@ -18,11 +18,11 @@ func NewTodoRepo(db *sql.DB) *todoRepo {
 	}
 }
 
-func (t *todoRepo) CreateTodo(todo *entity.ToDo) (int, error) {
+func (t *todoRepo) CreateTodo(todo *entity.ToDo) error {
 
 	stmt, err := t.DB.Prepare("INSERT INTO todos (description, done) VALUES (?, ?)")
 	if err != nil {
-		return 0, err
+		return err
 	}
 	defer stmt.Close()
 
@@ -33,22 +33,20 @@ func (t *todoRepo) CreateTodo(todo *entity.ToDo) (int, error) {
 	// smt.Exec is for database modifications, commands.
 	result, err = stmt.Exec(&todo.Description, &todo.Done)
 	if err != nil {
-		return 0, err
+		return err
 	}
 
 	rows, err := result.RowsAffected()
 
 	if err != nil {
-		return 0, err
+		return err
 	}
 
 	if rows == 0 {
-		return 0, fmt.Errorf("erro ao criar todo")
+		return fmt.Errorf("error when creating todo")
 	}
 
-	fmt.Println("Todo criado com sucesso!")
-
-	return int(rows), nil
+	return nil
 }
 
 func (t *todoRepo) GetTodo(offset int, limit int) ([]entity.ToDo, error) {
@@ -111,7 +109,7 @@ func (t *todoRepo) GetTodoById(id int) (entity.ToDo, error) {
 	defer rows.Close() // close the rows (preventing lock)
 
 	if !rows.Next() {
-		return entity, fmt.Errorf("todo não encontrado")
+		return entity, fmt.Errorf("todo not found")
 	}
 
 	err = rows.Scan(&entity.ID, &entity.Description, &entity.Done)
@@ -122,54 +120,52 @@ func (t *todoRepo) GetTodoById(id int) (entity.ToDo, error) {
 	return entity, nil
 }
 
-func (t *todoRepo) UpdateTodoById(id int, todo *entity.ToDo) (int, error) {
+func (t *todoRepo) UpdateTodoById(id int, todo *entity.ToDo) error {
 	stmt, err := t.DB.Prepare("UPDATE todos SET description = ?, done = ? WHERE id = ?")
 	if err != nil {
-		return 0, err
+		return err
 	}
 	defer stmt.Close()
 
 	result, err := stmt.Exec(todo.Description, todo.Done, id)
 	if err != nil {
-		return 0, err
+		return err
 	}
 
 	rowsAffected, err := result.RowsAffected()
 	if err != nil {
-		return 0, err
+		return err
 	}
 
 	if rowsAffected == 0 {
-		return 0, fmt.Errorf("todo não encontrado para atualização")
+		return fmt.Errorf("todo not found")
 	}
 
-	fmt.Println("Todo atualizado com sucesso!")
-
-	return int(rowsAffected), nil
+	return nil
 }
 
-func (t *todoRepo) DeleteTodoById(id int) (int, error) {
+func (t *todoRepo) DeleteTodoById(id int) error {
 	stmt, err := t.DB.Prepare("DELETE FROM todos WHERE id = ?")
 	if err != nil {
-		return 0, err
+		return err
 	}
 	defer stmt.Close()
 
 	result, err := stmt.Exec(id)
 	if err != nil {
-		return 0, err
+		return err
 	}
 
 	rowsAffected, err := result.RowsAffected()
 	if err != nil {
-		return 0, err
+		return err
 	}
 
 	if rowsAffected == 0 {
-		return 0, fmt.Errorf("todo não encontrado para deleção")
+		return fmt.Errorf("todo not found")
 	}
 
 	fmt.Println("Todo deletado com sucesso!")
 
-	return int(rowsAffected), nil
+	return nil
 }

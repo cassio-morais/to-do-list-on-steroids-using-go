@@ -1,11 +1,11 @@
 ### Get all todos
-GET http://localhost:8080/todos?offset=0&limit=10
+GET http://localhost:8080/todos?offset=0&limit=25
 Accept: application/json
 
 ###
 
 ### Get a specific todo by ID
-GET http://localhost:8080/todos/1
+GET http://localhost:8080/todos/15
 Accept: application/json
 
 ###
@@ -15,14 +15,14 @@ POST http://localhost:8080/todos
 Content-Type: application/json
 
 {
-    "description": "This is a new todo item 3",
+    "description": "blah blah blah 123",
     "done" : false
 }
 
 ###
 
 ### Update an existing todo
-PUT http://localhost:8080/todos/1
+PUT http://localhost:8080/todos/15
 Content-Type: application/json
 
 {
@@ -33,4 +33,4 @@ Content-Type: application/json
 ###
 
 ### Delete a todo
-DELETE http://localhost:8080/todos/1
+DELETE http://localhost:8080/todos/15
