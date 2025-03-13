@@ -2,7 +2,6 @@ package main
 
 import (
 	"database/sql"
-	"fmt"
 	"log"
 	"todo-list-api/internal/handler"
 	"todo-list-api/internal/repository"
@@ -31,8 +30,6 @@ func main() {
 		log.Fatal(err)
 		panic(err)
 	}
-
-	fmt.Println("Banco de dados SQLite configurado com sucesso!")
 
 	r := gin.Default()
 	r.Use(gin.Logger())

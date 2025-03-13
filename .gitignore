@@ -28,3 +28,6 @@ go.work.sum
 *.db
 
 *.log
+
+# main without extension
+main
