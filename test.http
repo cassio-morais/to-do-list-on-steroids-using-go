@@ -34,3 +34,8 @@ Content-Type: application/json
 
 ### Delete a todo
 DELETE http://localhost:8080/todos/15
+
+
+### 
+
+GET http://localhost:8080/test

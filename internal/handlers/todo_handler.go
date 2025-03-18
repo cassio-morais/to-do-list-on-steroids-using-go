@@ -1,25 +1,27 @@
-package handler
+package handlers
 
 import (
 	"strconv"
-	"todo-list-api/internal/core/contract"
-	"todo-list-api/internal/core/entity"
+	"todo-list-api/internal/core/contracts"
+	"todo-list-api/internal/core/entities"
 
 	"github.com/gin-gonic/gin"
 )
 
 type TodoHandler struct {
-	toDoRepository contract.ToDoRepository
+	toDoRepository contracts.ToDoRepository
+	emailService   contracts.EmailService
 }
 
-func NewTodoHandler(toDoRepository contract.ToDoRepository) *TodoHandler {
+func NewTodoHandler(toDoRepository contracts.ToDoRepository, emailService contracts.EmailService) *TodoHandler {
 	return &TodoHandler{
 		toDoRepository: toDoRepository,
+		emailService:   emailService,
 	}
 }
 
 func (th *TodoHandler) CreateTodoHandler(ctx *gin.Context) {
-	var todo entity.ToDo
+	var todo entities.ToDo
 
 	if err := ctx.BindJSON(&todo); err != nil {
 		ctx.JSON(400, gin.H{
@@ -36,6 +38,8 @@ func (th *TodoHandler) CreateTodoHandler(ctx *gin.Context) {
 		})
 		return
 	}
+
+	go th.emailService.Send(&todo, "some@email.com")
 
 	ctx.JSON(200, CreatedTodoResponse{Description: todo.Description, Done: todo.Done})
 }
@@ -79,7 +83,7 @@ func (th *TodoHandler) UpdateTodoHandler(ctx *gin.Context) {
 	idStr := ctx.Param("id")
 	id, _ := strconv.Atoi(idStr)
 
-	var todo entity.ToDo
+	var todo entities.ToDo
 	err := ctx.BindJSON(&todo)
 
 	if err != nil {

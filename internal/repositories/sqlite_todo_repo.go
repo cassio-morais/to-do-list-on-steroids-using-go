@@ -1,25 +1,25 @@
-package repository
+package repositories
 
 import (
 	"database/sql"
 	"fmt"
 	"log"
-	"todo-list-api/internal/core/entity"
+	"todo-list-api/internal/core/entities"
 
 	_ "modernc.org/sqlite"
 )
 
-type todoRepo struct {
+type SqliteTodoRepo struct {
 	DB *sql.DB
 }
 
-func NewTodoRepo(db *sql.DB) *todoRepo {
-	return &todoRepo{
+func NewSqliteTodoRepo(db *sql.DB) *SqliteTodoRepo {
+	return &SqliteTodoRepo{
 		DB: db,
 	}
 }
 
-func (t *todoRepo) CreateTodo(todo *entity.ToDo) error {
+func (t *SqliteTodoRepo) CreateTodo(todo *entities.ToDo) error {
 
 	stmt, err := t.DB.Prepare("INSERT INTO todos (description, done) VALUES (?, ?)")
 	if err != nil {
@@ -50,7 +50,7 @@ func (t *todoRepo) CreateTodo(todo *entity.ToDo) error {
 	return nil
 }
 
-func (t *todoRepo) GetTodo(offset int, limit int) ([]entity.ToDo, error) {
+func (t *SqliteTodoRepo) GetTodo(offset int, limit int) ([]entities.ToDo, error) {
 
 	if offset <= 0 {
 		offset = 0
@@ -60,7 +60,7 @@ func (t *todoRepo) GetTodo(offset int, limit int) ([]entity.ToDo, error) {
 		limit = 10
 	}
 
-	var todos []entity.ToDo
+	var todos []entities.ToDo
 
 	// create the query statement
 	stmt, err := t.DB.Prepare("SELECT * FROM todos LIMIT ? OFFSET ?")
@@ -80,13 +80,13 @@ func (t *todoRepo) GetTodo(offset int, limit int) ([]entity.ToDo, error) {
 
 	for rows.Next() {
 
-		entity := entity.ToDo{}
-		err = rows.Scan(&entity.ID, &entity.Description, &entity.Done)
+		todo := entities.ToDo{}
+		err = rows.Scan(&todo.ID, &todo.Description, &todo.Done)
 		if err != nil {
 			return todos, err
 		}
 
-		todos = append(todos, entity)
+		todos = append(todos, todo)
 	}
 
 	log.Printf("todos: %+v", todos)
@@ -94,8 +94,8 @@ func (t *todoRepo) GetTodo(offset int, limit int) ([]entity.ToDo, error) {
 	return todos, nil
 }
 
-func (t *todoRepo) GetTodoById(id int) (entity.ToDo, error) {
-	var todo entity.ToDo
+func (t *SqliteTodoRepo) GetTodoById(id int) (entities.ToDo, error) {
+	var todo entities.ToDo
 
 	stmt, err := t.DB.Prepare("SELECT * FROM todos WHERE id = ?")
 	if err != nil {
@@ -125,7 +125,7 @@ func (t *todoRepo) GetTodoById(id int) (entity.ToDo, error) {
 	return todo, nil
 }
 
-func (t *todoRepo) UpdateTodoById(id int, todo *entity.ToDo) error {
+func (t *SqliteTodoRepo) UpdateTodoById(id int, todo *entities.ToDo) error {
 	stmt, err := t.DB.Prepare("UPDATE todos SET description = ?, done = ? WHERE id = ?")
 	if err != nil {
 		return err
@@ -152,7 +152,7 @@ func (t *todoRepo) UpdateTodoById(id int, todo *entity.ToDo) error {
 	return nil
 }
 
-func (t *todoRepo) DeleteTodoById(id int) error {
+func (t *SqliteTodoRepo) DeleteTodoById(id int) error {
 	stmt, err := t.DB.Prepare("DELETE FROM todos WHERE id = ?")
 	if err != nil {
 		return err

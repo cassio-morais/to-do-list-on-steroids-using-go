@@ -3,8 +3,9 @@ package main
 import (
 	"database/sql"
 	"log"
-	"todo-list-api/internal/handler"
-	"todo-list-api/internal/repository"
+	"todo-list-api/internal/handlers"
+	"todo-list-api/internal/repositories"
+	"todo-list-api/internal/services"
 
 	"github.com/gin-gonic/gin"
 	_ "modernc.org/sqlite"
@@ -18,7 +19,6 @@ func main() {
 	}
 	defer db.Close()
 
-	// Criar tabela se não existir
 	createTableSQL := `CREATE TABLE IF NOT EXISTS  todos (
     	id INTEGER PRIMARY KEY AUTOINCREMENT , 
     	description TEXT NOT NULL,
@@ -35,14 +35,15 @@ func main() {
 	r.Use(gin.Logger())
 
 	// dependency injection
-	todoRepository := repository.NewTodoRepo(db)
-	handler := handler.NewTodoHandler(todoRepository)
+	todoRepository := repositories.NewSqliteTodoRepo(db)
+	emailService := services.NewDefaultEmailService()
+	todoHandler := handlers.NewTodoHandler(todoRepository, emailService)
 
-	r.POST("/todos", handler.CreateTodoHandler)
-	r.GET("/todos", handler.GetTodoHandler)
-	r.GET("/todos/:id", handler.GetTodoByIdHandler)
-	r.PUT("/todos/:id", handler.UpdateTodoHandler)
-	r.DELETE("/todos/:id", handler.DeleteTodoHandler)
+	r.POST("/todos", todoHandler.CreateTodoHandler)
+	r.GET("/todos", todoHandler.GetTodoHandler)
+	r.GET("/todos/:id", todoHandler.GetTodoByIdHandler)
+	r.PUT("/todos/:id", todoHandler.UpdateTodoHandler)
+	r.DELETE("/todos/:id", todoHandler.DeleteTodoHandler)
 
 	r.Run() // listen and serve on 0.0.0.0:8080
 }

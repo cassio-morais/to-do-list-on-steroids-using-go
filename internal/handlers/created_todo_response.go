@@ -1,7 +1,6 @@
-package entity
+package handlers
 
-type ToDo struct {
-	ID          uint64 `json:"id"`
+type CreatedTodoResponse struct {
 	Description string `json:"description" binding:"required"`
 	Done        bool   `json:"done" default:"false"`
 }
